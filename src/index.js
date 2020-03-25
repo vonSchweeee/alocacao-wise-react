@@ -1,33 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './style/css/index.css';
-import App from './views/App'
-import Login from './views/Login';
 import * as serviceWorker from './serviceWorker';
-import { BrowserRouter, Switch, Route} from 'react-router-dom';
-import PrivateRoute from './routes/PrivateRoute';
-import Cookies from 'universal-cookie';
-import Registro from './views/Registro';
 
-function hasToken(){
-    const cookies = new Cookies();
-    const token = cookies.get('token');
-    if(token) {
-        return true;
-    }
-    else {
-        return false;
-    }
-} 
+import './style/css/index.css';
+
+import { Provider} from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import {store, persistor} from './_store';
+
+import Toast from './views/components/containers/Toast';
+
+import Routes from './routes/Routes';
+
+
+
 
 ReactDOM.render(
-    <BrowserRouter>
-        <Switch>
-            <Route path='/login' exact={true} component={Login}/>
-            <Route path='/registro' exact={true} component={Registro}/>
-            <PrivateRoute hasToken={hasToken}><App/></PrivateRoute>
-        </Switch>
-    </BrowserRouter>
+    <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+            <Toast/>
+            <Routes/>
+        </PersistGate>
+    </Provider>
     , document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

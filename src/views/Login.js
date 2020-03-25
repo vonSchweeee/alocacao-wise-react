@@ -1,37 +1,13 @@
-import React, {Fragment, useEffect} from 'react';
-import {Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Paper, Box, Grid, Typography, Snackbar} from '@material-ui/core';
+import React, {Fragment, useEffect, Component} from 'react';
+import {Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Paper, Box, Grid, Typography} from '@material-ui/core';
 import loginStyles from '../style/js/login';
 import Cookies from 'universal-cookie';
 import UsuarioController from '../controllers/UsuarioController';
 import { useHistory } from "react-router-dom";
-import MuiAlert from '@material-ui/lab/Alert';
-
-// function Copyright() {
-//   return (
-//     <Typography variant="body2" color="textSecondary" align="center">
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://material-ui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }
-
-function Alert (props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
-
-function Toast (props) {
-    return(
-        <Snackbar open={props.open} autoHideDuration={props.autoHide} onClose={props.toastClose}>
-            <Alert onClose={props.toastClose} severity={props.severity}>
-                {props.message}
-            </Alert>
-        </Snackbar>
-    )
-}
+import { useDispatch, connect } from 'react-redux';
+import { showSuccessToast, showErrorToast } from '../_store/_actions/toastActions';
+import { setUser, setToken } from '../_store/_actions/userActions';
+import Copyright from './components/Copyright';
 
 
 const FormLogin = props => {
@@ -58,8 +34,6 @@ const FormLogin = props => {
                         color="primary" className={props.loginStyles.submit} onClick={props.submitForm}> 
                             Entrar
                         </Button>
-                        <Toast open={props.toast.open} autoHide={props.toast.autoHide} toastClose={props.toastClose} 
-                        severity={props.toast.severity} message={props.toast.message} />
                         <Grid container>
                         <Grid item xs>
                             <Link href="#" variant="body2">
@@ -73,7 +47,7 @@ const FormLogin = props => {
                         </Grid>
                         </Grid>
                         <Box mt={5}>
-                        {/* <Copyright />*/}
+                        <Copyright/>
                         </Box>
                     </form>
                     </div>
@@ -82,17 +56,12 @@ const FormLogin = props => {
     );
 }
 
-export default function Login () {
+function Login() {
     const loginStyle = loginStyles();
     //Form login
     const [email, setEmail] = React.useState('');
     const [senha, setSenha] = React.useState('');
-    const [autenticado, setAutenticado] = React.useState(false);
-    //Toast
-    const [open, setOpen] = React.useState(false);
-    const [autoHide, setAutohide] = React.useState(1500);
-    const [severity, setSeverity] = React.useState('error');
-    const [message, setMessage] = React.useState('error');
+
     const history = useHistory();
     //Campos de texto
     const [txtErro, setTxtErro] = React.useState('')
@@ -101,25 +70,12 @@ export default function Login () {
 
     const [sessaoVerif, setSessaoVerif] = React.useState(false);
 
+    const dispatch = useDispatch();
+
     //Alterar o nome da página
     useEffect(() =>{
         document.title = 'Login'
-        const cookies = new Cookies();
-        const token = cookies.get('token');
-        if(token && email==='' && ! sessaoVerif) {
-            setSessaoVerif(true);
-            UsuarioController.verifyToken(token)
-            .then(res => { 
-                if(res.status === 200)
-                    history.push('/');
-                else if (res.status === 401) {
-                    cookies.remove('token');
-                }
-            });
-            
-        }
-    }, [email, sessaoVerif, history]
-    );
+    });
 
     //Adicionar ao state o email e a senha
     const onTextChange = event => {
@@ -165,66 +121,66 @@ export default function Login () {
             UsuarioController.login(JSON.stringify({email, senha}))
                 .then((result) => {
                     if(result) {
-                        result.json().then(resultado => {
-                            console.log(resultado);
-                            console.log(result);
-                            if(result.status === 200) {
-                                const cookies = new Cookies();
-                                cookies.set('token', 'Bearer ' + resultado.token, { path: '/' });
-                                setOpen(true);
-                                setMessage('Autenticado, seja bem-vindo!');
-                                setAutohide('1000');
-                                setSeverity('success');
-                                setAutenticado(true);
-                            }
-                            else if (result.status === 400) {    
-                                setOpen(true);
-                                setMessage('Senha incorreta!');
-                                setAutohide('2000');
-                                setSeverity('error');
-                                setSenha('');
-                                setTxtErro("Senha incorreta.")
-                                setAutenticado(false);
-                                document.querySelector('#inputSenha').focus();
-                            }
-                            else if (result.status === 500 || result.status === 404) {
-                                setOpen(true);
-                                setMessage('Usuario não encontrado!');
-                                setAutohide('2000');
-                                setSeverity('error');
-                                setEmail('');
-                                setSenha('');
-                                setTxtErro("Usuário não encontrado.")
-                                setAutenticado(false);
-                                document.querySelector('#inputEmail').focus();
-                            }
-                        });
+                        if (result.status === 401) {    
+                            dispatch(showErrorToast('Senha incorreta.'));
+                            setSenha('');
+                            setTxtErro("Senha incorreta.");
+                            document.querySelector('#inputSenha').focus();
+                        }
+                        if (result.status === 500 || result.status === 404) {
+                            dispatch(showErrorToast('Usuario não encontrado!'));
+                            setEmail('');
+                            setSenha('');
+                            setTxtErro("Usuário não encontrado.")
+                            document.querySelector('#inputEmail').focus();
+                        }
+                        else {
+                            result.json().then(resultado => {
+                                if(result.status === 200) {
+                                    console.log(result);
+                                    const cookies = new Cookies();
+                                    cookies.set('token', 'Bearer ' + resultado.token, { path: '/' });
+                                    const userData = atob(resultado.token.split('.')[1]);
+                                    dispatch(setUser(userData));
+                                    dispatch(setToken(resultado.token));
+                                    dispatch(showSuccessToast('Autenticado com sucesso!'));
+                                    setTimeout(() => { 
+                                        history.push('/'); 
+                                    }, 1001);
+                                }
+                            });
+                        }
                     }
                 },
                 (erro) => {
-                    setOpen(true);
-                    setAutenticado(false);
-                    setMessage('Erro.');
-                    setAutohide('2000');
-                    setSeverity('error');
-                    setEmail('');
-                    setSenha('');
+                    dispatch(showErrorToast('Erro.'));
+                    document.querySelector('#inputEmail').focus();
                 });
         }
     }
 
-    //Função para lidar com o evento de fechar do Toast
-    const toastClose = () => {
-        if(autenticado) {
-            history.push('/');
-        }
-        setOpen(false);
-    };
-
     return(
         <Fragment>
-            <FormLogin loginStyles={loginStyle} toast={{open, autoHide, severity, message}} toastClose={toastClose} submitForm={submitForm} email={email}
+            <FormLogin loginStyles={loginStyle} submitForm={submitForm} email={email}
             senha={senha} onTextChange={onTextChange} txtErro={txtErro} rememberme={rememberMe}/>
         </Fragment>
     );
 };
+
+class LoginScreen extends Component {
+    componentWillMount(){
+        const { history } = this.props;
+        if (this.props.token){
+            history.push('/');
+        }
+    }
+    render(){
+        return(
+            <Login/>
+        )
+    }
+}
+
+const mapStateToProps = state => ({token: state.user.token});
+
+export default connect(mapStateToProps)(LoginScreen);

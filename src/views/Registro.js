@@ -1,8 +1,6 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
@@ -14,12 +12,12 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import OrganizacaoController from '../controllers/OrganizacaoController';
-import AbortController from 'abort-controller'
-import Cookies from 'universal-cookie';
 import { MenuItem } from '@material-ui/core';
 import UsuarioController from '../controllers/UsuarioController';
 import Usuario from '../models/Usuario';
 import { useHistory } from "react-router-dom";
+import { useDispatch, connect } from 'react-redux';
+import { showSuccessToast } from '../_store/_actions/toastActions';
 // function Copyright() {
 //   return (
 //     <Typography variant="body2" color="textSecondary" align="center">
@@ -57,21 +55,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Alert (props) {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
-
-function Toast (props) {
-    return(
-        <Snackbar open={props.open} autoHideDuration={props.autoHide} onClose={props.toastClose}>
-            <Alert onClose={props.toastClose} severity={props.severity}>
-                {props.message}
-            </Alert>
-        </Snackbar>
-    )
-}
-
-export default function Registro() {
+function Registro() {
     const classes = useStyles();
     const history = useHistory();
 
@@ -87,13 +71,6 @@ export default function Registro() {
     //Ativação e desativação do select de Organizações
     const [selectDisabled, setSelectDisabled] = React.useState(true);
     const [loading, setLoading] = React.useState(false);
-    //Toast
-    const [toastVisible, setToastVisible] = React.useState(false);
-    const [toastAutoHide, setToastAutoHide] = React.useState(1500);
-    const [toastSeverity, setToastSeverity] = React.useState('error');
-    const [toastMessage, setToastMessage] = React.useState('');
-
-    const [registrado, setRegistrado] = React.useState(false);
 
     const [sessaoVerif, setSessaoVerif] = React.useState(false);
 
@@ -113,8 +90,7 @@ export default function Registro() {
 
     const [btnDesativado, setBtnDesativado] = React.useState(false);
 
-    const controller = new AbortController()
-    const signal = controller.signal;
+    const dispatch = useDispatch();
 
     const onTextChange = event => {
         const {name, value} = event.target;
@@ -164,26 +140,6 @@ export default function Registro() {
         }
     }, [email, setOrganizacoes, sessaoVerif, history]
     );
-
-    //Verificar se o usuário está autenticado para redireciona-lo
-    React.useEffect(() => {
-        const cookies = new Cookies();
-        const token = cookies.get('token');
-        if(token && email==='' && ! sessaoVerif) {
-            setSessaoVerif(true);
-            UsuarioController.verifyToken(token)
-            .then(res => { 
-                if(res.status === 200)
-                    history.push('/');
-                else if (res.status === 401) {
-                    cookies.remove('token');
-                }
-            });
-            
-        }
-    }, [email, history, sessaoVerif]
-    );
-
     //Validar campos
     React.useEffect(() => {
         if(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))
@@ -227,11 +183,10 @@ export default function Registro() {
             .then(
                 (res) =>{
                     if(res.status === 201){
-                        setRegistrado(true);
-                        setToastMessage('Usuário cadastrado com sucesso!');
-                        setToastSeverity('success');
-                        setToastVisible(true);
-                        setToastAutoHide(1000);
+                        dispatch(showSuccessToast('Usuário cadastrado com sucesso!'));
+                        setTimeout(() => { 
+                            history.push('/login'); 
+                        }, 1001);
                     }
                     else {
                         
@@ -289,15 +244,6 @@ export default function Registro() {
         }
         return true;
     }
-
-   const onToastClose = () => {
-       if(registrado){
-           history.push('/login');
-       }
-       else {
-           setToastVisible(false);
-       }
-   }
 
     return(
         <Container component="main" maxWidth="sm">
@@ -420,8 +366,6 @@ export default function Registro() {
                 </Grid>
             </Grid>
             </form>
-            <Toast open={toastVisible} autoHide={toastAutoHide} toastClose={onToastClose} 
-            severity={toastSeverity} message={toastMessage}/>
         </div>
         <Box mt={5}>
             
@@ -429,3 +373,21 @@ export default function Registro() {
         </Container>
     );
 }
+
+class RegisterScreen extends Component {
+    componentWillMount(){
+        const { history } = this.props;
+        if (this.props.token){
+            history.push('/');
+        }
+    }
+    render(){
+        return(
+            <Registro/>
+        )
+    }
+}
+
+const mapStateToProps = state => ({token: state.user.token});
+
+export default connect(mapStateToProps)(RegisterScreen);

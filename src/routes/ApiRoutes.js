@@ -3,6 +3,9 @@ const ApiRoutes = {
     urlRest: 'http://localhost:3001/rest',
     urlLogin: 'http://localhost:3001/login',
     urlRegistro: 'http://localhost:3001/registro',
-    getOrgDominio: 'http://localhost:3001/rest/organizacoes/dominio'
+
+    getOrgDominio: 'http://localhost:3001/rest/organizacoes/dominio',
+
+    getSalasOrgId: 'http://localhost:3001/rest/sala/org/'
 }
 export default ApiRoutes;

@@ -2,7 +2,8 @@ import ApiRoutes from '../routes/ApiRoutes'
 
 const UsuarioController = {
     verifyToken(token){
-        return fetch(ApiRoutes.verifyToken, {method: 'GET', headers: {'authorization': token}});
+        console.log(token);
+        return fetch(ApiRoutes.verifyToken, {method: 'GET', headers: {'Authorization': token}});
     },
     login(usuario){
         return fetch(ApiRoutes.urlLogin, {method: 'POST', headers: {'content-type': 'application/json'}, body: usuario});

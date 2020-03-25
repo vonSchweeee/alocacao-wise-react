@@ -6,19 +6,27 @@ import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import logoWise from '../../img/logowise.png';
-import '../../style/css/navbar.css'
-import Cookies from 'universal-cookie';
+import logoWise from '../../../img/logowise.png';
+import '../../../style/css/navbar.css'
 import { useHistory } from "react-router-dom";
+import { logout } from '../../../_store/_actions/userActions';
+import { useDispatch, useSelector } from "react-redux";
+import { showSidebar, hideSidebar } from '../../../_store/_actions/sidebarActions';
 
 export default function Navbar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
     const history = useHistory();
-  
+    const dispatch = useDispatch();
+
+    const { sidebarOpen } = useSelector(
+      state => state.ui
+    );
+
 
     const handleMenu = event => {
       setAnchorEl(event.currentTarget);
+      console.log(anchorEl);
     };
   
     const handleClose = () => {
@@ -26,16 +34,24 @@ export default function Navbar() {
     };
     
     const sair = () => {
-        const cookies = new Cookies();
-        cookies.remove('token');
+        dispatch(logout());
         history.push('/login');
+    };
+
+    const handleSidebar = () => {
+      if(sidebarOpen){
+        dispatch(hideSidebar());
+      }
+      else{
+        dispatch(showSidebar());
+      }
     };
 
     return (
       <div>
         <AppBar position="static">
           <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="menu">
+            <IconButton onClick={handleSidebar} edge="start" color="inherit" aria-label="menu">
               <MenuIcon />
             </IconButton>
             <img id="logo" src={logoWise} alt="logo"/>

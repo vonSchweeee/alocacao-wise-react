@@ -1,37 +1,52 @@
-import React, {Fragment } from 'react';
-import Navbar from './components/Navbar';
-import Cookies from 'universal-cookie';
-import { useHistory } from "react-router-dom";
+import React, {Fragment, useEffect } from 'react';
+import Navbar from './components/containers/Navbar';
 import UsuarioController from '../controllers/UsuarioController';
+import { useDispatch, useSelector } from 'react-redux';
+import { showErrorToast } from '../_store/_actions/toastActions';
+import { logout } from '../_store/_actions/userActions';
+import { useHistory } from 'react-router';
+import Sidebar from './components/containers/Sidebar';
+import Content from './components/Content';
+import AppRoutes from '../routes/AppRoutes';
 
 export default function App() {
 
-  const [tokenVerif, setTokenVerif] = React.useState(false);
+  const [authenticated, setAuthenticated] = React.useState(false);
+  const { token} = useSelector(
+    state => state.user
+  );
+  const dispatch = useDispatch();
   const history = useHistory();
 
-  React.useEffect(() =>{
-    document.title = 'Home'
-    const cookies = new Cookies();
-    const token = cookies.get('token');
-    if(token && ! tokenVerif) {
-        UsuarioController.verifyToken(token)
-        .then(res => { 
-            if(res.status === 200){
-                history.push('/');
-                setTokenVerif(true);
-            }
-            else if (res.status === 401) {
-                cookies.remove('token');
-                history.push('/login');
-            }
+  useEffect(() =>{
+    document.title = 'Wise Systems';
+    if(! authenticated){
+      UsuarioController.verifyToken(token)
+        .then((res) => {
+          if(res.status !== 200){
+            dispatch(showErrorToast('Sessão expirada!'));
+            dispatch(logout());
+            setTimeout(() => {
+              history.push('/'); 
+            }, 2501);
+          }
+          else{
+            setAuthenticated(true);
+          }
+        },
+        (erro) => {
+          dispatch(showErrorToast('Erro.'))
         });
-        
     }
   });
 
   return(
     <Fragment>
       <Navbar/>
+      <Sidebar/>
+      <Content>
+        <AppRoutes/>
+      </Content>
     </Fragment>
   );
 };
