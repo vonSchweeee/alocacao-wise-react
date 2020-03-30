@@ -12,6 +12,7 @@ import { useHistory } from "react-router-dom";
 import { logout } from '../../../_store/_actions/userActions';
 import { useDispatch, useSelector } from "react-redux";
 import { showSidebar, hideSidebar } from '../../../_store/_actions/sidebarActions';
+import { clear } from '../../../_store/_actions/tempActions';
 
 export default function Navbar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -34,8 +35,9 @@ export default function Navbar() {
     };
     
     const sair = () => {
-        dispatch(logout());
         history.push('/login');
+        dispatch(logout());
+        dispatch(clear());
     };
 
     const handleSidebar = () => {

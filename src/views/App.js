@@ -20,6 +20,12 @@ export default function App() {
 
   useEffect(() =>{
     document.title = 'Wise Systems';
+    // window.addEventListener("beforeunload", (e) => 
+    //   {  
+    //       e.preventDefault();
+    //       dispatch(clear());
+    //       return;
+    //   });
     if(! authenticated){
       UsuarioController.verifyToken(token)
         .then((res) => {

@@ -10,6 +10,9 @@ const UsuarioController = {
     },
     registro(usuario){
         return fetch(ApiRoutes.urlRegistro, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(usuario)});
+    },
+    findByOrgId(id_organizacao, token){
+        return fetch(ApiRoutes.findUserByOrgId + id_organizacao, {method: 'GET', headers: {'Authorization': token}});
     }
 }
 export default UsuarioController;

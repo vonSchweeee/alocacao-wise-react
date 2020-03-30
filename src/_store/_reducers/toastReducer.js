@@ -7,7 +7,7 @@ const toastReducer = (state = INITIAL_STATE, action) => {
           toastOpen: true,
           toastMessage: action.payload.message,
           toastSeverity: 'success',
-          toastAutoHide: 1000
+          toastAutoHide: action.payload.timeout || 1000
         };
       case "TOAST_ERROR":
         return {
@@ -15,7 +15,7 @@ const toastReducer = (state = INITIAL_STATE, action) => {
           toastOpen: true,
           toastMessage: action.payload.message,
           toastSeverity: 'error',
-          toastAutoHide: 2500
+          toastAutoHide: action.payload.timeout || 2500
         };
       case "TOAST_CLEAR":
         return {

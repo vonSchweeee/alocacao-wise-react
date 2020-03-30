@@ -1,12 +1,12 @@
-export const showSuccessToast = message => {
+export const showSuccessToast = (message, timeout) => {
     return dispatch => {
-      dispatch({ type: "TOAST_SUCCESS", payload: {message} });
+      dispatch({ type: "TOAST_SUCCESS", payload: {message, timeout} });
     };
 };
 
-export const showErrorToast = message => {
+export const showErrorToast = (message, timeout) => {
     return dispatch => {
-      dispatch({ type: "TOAST_ERROR", payload: {message} });
+      dispatch({ type: "TOAST_ERROR", payload: {message, timeout} });
     };
 };
 

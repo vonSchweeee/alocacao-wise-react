@@ -72,14 +72,11 @@ function Registro() {
     const [selectDisabled, setSelectDisabled] = React.useState(true);
     const [loading, setLoading] = React.useState(false);
 
-    const [sessaoVerif, setSessaoVerif] = React.useState(false);
-
     //Validação do formulário
     const [emailValido, setEmailValido] = React.useState(false);
     const [organizacaoValida, setOrganizacaoValida] = React.useState(false);
     const [nomeValido, setNomeValido] = React.useState(false);
     const [senhaValida, setSenhaValida] = React.useState(false);
-    const [senhaConfirmValida, setSenhaConfirmValida] = React.useState(false);
     const [senhaConfirmada, setSenhaConfirmada] = React.useState(false);
 
     const [helperEmail, setHelperEmail] = React.useState('');
@@ -111,7 +108,9 @@ function Registro() {
 
     //Realizar solicitação de buscar organizações pelo domínio do email
     React.useEffect(() => {
+        /* eslint-disable */
         if(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
+        /* eslint-disable */
             setTimeout(function () {
                 const dominio = email.split('@')[1];
                 setLoading(true);
@@ -138,7 +137,7 @@ function Registro() {
             setOrganizacoes([]);
             setSelectDisabled(true);
         }
-    }, [email, setOrganizacoes, sessaoVerif, history]
+    }, [email, setOrganizacoes, history]
     );
     //Validar campos
     React.useEffect(() => {

@@ -4,10 +4,11 @@ import loginStyles from '../style/js/login';
 import Cookies from 'universal-cookie';
 import UsuarioController from '../controllers/UsuarioController';
 import { useHistory } from "react-router-dom";
-import { useDispatch, connect } from 'react-redux';
+import { useDispatch, connect} from 'react-redux';
 import { showSuccessToast, showErrorToast } from '../_store/_actions/toastActions';
 import { setUser, setToken } from '../_store/_actions/userActions';
 import Copyright from './components/Copyright';
+import setUsers from '../_store/_actions/organizacaoActions';
 
 
 const FormLogin = props => {
@@ -68,8 +69,6 @@ function Login() {
     //Usuario usou lembre-se de mim
     const [session, setSession] = React.useState(false);
 
-    const [sessaoVerif, setSessaoVerif] = React.useState(false);
-
     const dispatch = useDispatch();
 
     //Alterar o nome da página
@@ -113,7 +112,9 @@ function Login() {
             setTxtErro("Senha não pode ser vazia.");
             document.querySelector('#inputSenha').focus();
         }
+        /* eslint-disable */
         else if(! /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
+        /* eslint-disable */
             setTxtErro("Digite um endereço de e-mail válido.");
             document.querySelector('#inputEmail').focus();
         }
@@ -141,12 +142,16 @@ function Login() {
                                     const cookies = new Cookies();
                                     cookies.set('token', 'Bearer ' + resultado.token, { path: '/' });
                                     const userData = atob(resultado.token.split('.')[1]);
-                                    dispatch(setUser(userData));
+                                    const userDataObj = JSON.parse(userData);
+                                    dispatch(setUser(userDataObj));
                                     dispatch(setToken(resultado.token));
                                     dispatch(showSuccessToast('Autenticado com sucesso!'));
                                     setTimeout(() => { 
                                         history.push('/'); 
                                     }, 1001);
+                                    UsuarioController.findByOrgId(userDataObj.id_organizacao, resultado.token)
+                                        .then(res => res.json()
+                                        .then(usuarios => dispatch(setUsers(usuarios))));
                                 }
                             });
                         }

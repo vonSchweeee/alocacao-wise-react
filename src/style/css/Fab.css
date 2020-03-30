@@ -1,0 +1,23 @@
+@media (max-width:  1365px){
+    .fab {
+        position: fixed;
+        bottom: 30px;
+        right: 3%;
+    }
+}
+
+@media (max-width:  1655px){
+    .fab {
+        position: fixed;
+        bottom: 30px;
+        right: 8%;
+    }
+}
+
+@media (min-width:  1600px){
+    .fab {
+        position: fixed;
+        bottom: 40px;
+        right: 15%;
+    }
+}

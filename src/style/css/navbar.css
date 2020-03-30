@@ -2,6 +2,12 @@
   max-width: 8%;
   padding-left: 0.8%;
 }
+@media (max-width: 600px) {
+  #logo {
+    max-width: 16%;
+    padding-left: 0.8%;
+  }
+}
 
 #acct-circle {
   margin-left: auto;
